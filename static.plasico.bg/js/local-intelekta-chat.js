@@ -207,6 +207,16 @@
 		updateBadge(root);
 	}
 
+	function withTweaking(fn) {
+		var prev = tweaking;
+		tweaking = true;
+		try {
+			fn();
+		} finally {
+			tweaking = prev;
+		}
+	}
+
 	function applyHeaderState(root) {
 		var offline = previewMode === 'offline';
 		var title = root.querySelector('.head h2');
@@ -214,14 +224,12 @@
 		var wantSub = offline ? SUB_OFFLINE : SUB_ONLINE;
 		var modeKey = offline ? 'offline' : 'online';
 
-		if (title) {
-			var needsTitle =
-				title.getAttribute('data-plasico-title') !== modeKey ||
-				!title.querySelector('.plasico-status-dot');
-			if (needsTitle) {
-				var prevTweaking = tweaking;
-				tweaking = true;
-				try {
+		withTweaking(function () {
+			if (title) {
+				var needsTitle =
+					title.getAttribute('data-plasico-title') !== modeKey ||
+					!title.querySelector('.plasico-status-dot');
+				if (needsTitle) {
 					title.setAttribute('data-plasico-title', modeKey);
 					title.textContent = '';
 					title.appendChild(document.createTextNode('Пласико '));
@@ -233,77 +241,72 @@
 					title.appendChild(
 						document.createTextNode(offline ? ' офлайн' : ' на линия')
 					);
-				} finally {
-					tweaking = prevTweaking;
 				}
 			}
-		}
 
-		if (status && status.textContent !== wantSub) status.textContent = wantSub;
+			if (status && status.textContent !== wantSub) status.textContent = wantSub;
 
-		var head = root.querySelector('.head');
-		if (head) {
-			if (offline) head.classList.add('plasico-offline');
-			else head.classList.remove('plasico-offline');
-		}
+			var head = root.querySelector('.head');
+			if (head) {
+				if (offline) head.classList.add('plasico-offline');
+				else head.classList.remove('plasico-offline');
+			}
 
-		/* Remove legacy offline badge icon if present */
-		var legacyIcon = root.querySelector('.plasico-offline-icon');
-		if (legacyIcon) legacyIcon.remove();
+			/* Remove legacy offline badge icon if present */
+			var legacyIcon = root.querySelector('.plasico-offline-icon');
+			if (legacyIcon) legacyIcon.remove();
 
-		/* Show name/email row in offline preview (matches stock offline form) */
-		var offlineRow = root.querySelector('form.compose .row');
-		if (offlineRow) offlineRow.hidden = !offline;
+			/* Show name/email row in offline preview (matches stock offline form) */
+			var offlineRow = root.querySelector('form.compose .row');
+			if (offlineRow) offlineRow.hidden = !offline;
 
-		/* Mid-panel email note copy switches with online/offline preview */
-		var note = root.querySelector('.note');
-		if (note) {
-			var noteText = note.querySelector(':scope > div:not(form)');
-			if (!noteText) {
-				/* First non-form child */
-				for (var ni = 0; ni < note.children.length; ni++) {
-					if (note.children[ni].tagName !== 'FORM') {
-						noteText = note.children[ni];
-						break;
+			/* Mid-panel email note copy switches with online/offline preview */
+			var note = root.querySelector('.note');
+			if (note) {
+				var noteText = note.querySelector(':scope > div:not(form)');
+				if (!noteText) {
+					for (var ni = 0; ni < note.children.length; ni++) {
+						if (note.children[ni].tagName !== 'FORM') {
+							noteText = note.children[ni];
+							break;
+						}
 					}
 				}
+				var wantNote = offline ? NOTE_OFFLINE : NOTE_ONLINE;
+				if (noteText && noteText.textContent !== wantNote) {
+					noteText.textContent = wantNote;
+				}
+				if (offline) {
+					note.hidden = false;
+					var noteForm = note.querySelector('form');
+					if (noteForm) noteForm.hidden = true;
+				} else {
+					var noteFormOn = note.querySelector('form');
+					if (noteFormOn) noteFormOn.hidden = false;
+					if (note.getAttribute('data-plasico-forced-offline') === '1') {
+						note.hidden = true;
+						note.removeAttribute('data-plasico-forced-offline');
+					}
+				}
+				if (offline) note.setAttribute('data-plasico-forced-offline', '1');
 			}
-			var wantNote = offline ? NOTE_OFFLINE : NOTE_ONLINE;
-			if (noteText && noteText.textContent !== wantNote) {
-				noteText.textContent = wantNote;
-			}
-			if (offline) {
-				note.hidden = false;
-				/* Compose already has name/email; hide note's email mini-form offline */
-				var noteForm = note.querySelector('form');
-				if (noteForm) noteForm.hidden = true;
-			} else {
-				/* Online: restore form; leave note visibility to stock widget */
-				var noteFormOn = note.querySelector('form');
-				if (noteFormOn) noteFormOn.hidden = false;
-				if (note.getAttribute('data-plasico-forced-offline') === '1') {
-					note.hidden = true;
-					note.removeAttribute('data-plasico-forced-offline');
+
+			var toggle = root.querySelector('.plasico-preview-toggle');
+			if (toggle) {
+				var onlineBtn = toggle.querySelector('[data-mode="online"]');
+				var offlineBtn = toggle.querySelector('[data-mode="offline"]');
+				if (onlineBtn) onlineBtn.setAttribute('aria-pressed', offline ? 'false' : 'true');
+				if (offlineBtn) offlineBtn.setAttribute('aria-pressed', offline ? 'true' : 'false');
+				if (onlineBtn) {
+					if (offline) onlineBtn.classList.remove('is-active');
+					else onlineBtn.classList.add('is-active');
+				}
+				if (offlineBtn) {
+					if (offline) offlineBtn.classList.add('is-active');
+					else offlineBtn.classList.remove('is-active');
 				}
 			}
-			if (offline) note.setAttribute('data-plasico-forced-offline', '1');
-		}
-
-		var toggle = root.querySelector('.plasico-preview-toggle');
-		if (toggle) {
-			var onlineBtn = toggle.querySelector('[data-mode="online"]');
-			var offlineBtn = toggle.querySelector('[data-mode="offline"]');
-			if (onlineBtn) onlineBtn.setAttribute('aria-pressed', offline ? 'false' : 'true');
-			if (offlineBtn) offlineBtn.setAttribute('aria-pressed', offline ? 'true' : 'false');
-			if (onlineBtn) {
-				if (offline) onlineBtn.classList.remove('is-active');
-				else onlineBtn.classList.add('is-active');
-			}
-			if (offlineBtn) {
-				if (offline) offlineBtn.classList.add('is-active');
-				else offlineBtn.classList.remove('is-active');
-			}
-		}
+		});
 	}
 
 	function ensurePreviewToggle(root) {
@@ -530,9 +533,11 @@
 		if (!log || !window.MutationObserver) return;
 		root.__plasicoLogObserved = true;
 		var mo = new MutationObserver(function () {
+			if (tweaking) return;
 			onLogChanged(root);
 		});
 		mo.observe(log, { childList: true });
+		root.__plasicoLogMo = mo;
 	}
 
 	/** Widget may overwrite h2 with plain text — restore our dotted title */
@@ -541,10 +546,18 @@
 		var head = root.querySelector('.head');
 		if (!head || !window.MutationObserver) return;
 		root.__plasicoHeadObserved = true;
-		new MutationObserver(function () {
-			if (tweaking) return;
-			applyHeaderState(root);
-		}).observe(head, { childList: true, subtree: true, characterData: true });
+		var scheduled = false;
+		var mo = new MutationObserver(function () {
+			if (tweaking || scheduled) return;
+			scheduled = true;
+			setTimeout(function () {
+				scheduled = false;
+				if (tweaking) return;
+				applyHeaderState(root);
+			}, 0);
+		});
+		mo.observe(head, { childList: true, subtree: true, characterData: true });
+		root.__plasicoHeadMo = mo;
 	}
 
 	function wirePanelAndCompose(root) {

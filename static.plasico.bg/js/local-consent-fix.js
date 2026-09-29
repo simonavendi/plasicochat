@@ -1,3 +1,8 @@
+/**
+ * Accept cookies locally / suppress CookieScript banner without freezing the page.
+ * Never observe the whole document and mutate it in the same callback — that races
+ * CookieScript reinjection and locks the main thread.
+ */
 (function () {
 	var storageKey = '__plasico_local_cookies__';
 	var store = {};
@@ -59,16 +64,22 @@
 
 	document.documentElement.classList.add('plasico-local-consent-accepted');
 
-	var style = document.createElement('style');
-	style.textContent =
-		'#cookiescript_injected,#cookiescript_injected_fsd,#cookiescript_badge,.cookiescript_overlay{display:none!important;}';
-	(document.head || document.documentElement).appendChild(style);
+	if (!document.getElementById('plasico-local-consent-style')) {
+		var style = document.createElement('style');
+		style.id = 'plasico-local-consent-style';
+		style.textContent =
+			'#cookiescript_injected,#cookiescript_injected_fsd,#cookiescript_badge,.cookiescript_overlay{display:none!important;visibility:hidden!important;pointer-events:none!important;}';
+		(document.head || document.documentElement).appendChild(style);
+	}
 
-	function suppressBanner() {
+	function hideCookieNodes() {
 		if (window.CookieScript && CookieScript.instance && CookieScript.instance.hide) {
-			CookieScript.instance.hide();
+			try {
+				CookieScript.instance.hide();
+			} catch (e) {}
 		}
 		document.documentElement.classList.remove('cookiescript_overlay');
+		/* CSS hides banners; avoid remove() here — it retriggers CookieScript and freezes. */
 		[
 			'#cookiescript_injected',
 			'#cookiescript_injected_fsd',
@@ -77,20 +88,22 @@
 		].forEach(function (sel) {
 			document.querySelectorAll(sel).forEach(function (el) {
 				el.style.setProperty('display', 'none', 'important');
-				el.remove();
+				el.style.setProperty('visibility', 'hidden', 'important');
+				el.style.setProperty('pointer-events', 'none', 'important');
 			});
 		});
 	}
 
-	suppressBanner();
-	document.addEventListener('DOMContentLoaded', suppressBanner);
-	window.addEventListener('load', suppressBanner);
-	document.addEventListener('CookieScriptLoaded', suppressBanner);
-
-	if (window.MutationObserver) {
-		new MutationObserver(suppressBanner).observe(document.documentElement, {
-			childList: true,
-			subtree: true,
-		});
+	function scheduleHide() {
+		hideCookieNodes();
+		setTimeout(hideCookieNodes, 0);
+		setTimeout(hideCookieNodes, 250);
+		setTimeout(hideCookieNodes, 1000);
+		setTimeout(hideCookieNodes, 3000);
 	}
+
+	scheduleHide();
+	document.addEventListener('DOMContentLoaded', scheduleHide);
+	window.addEventListener('load', scheduleHide);
+	document.addEventListener('CookieScriptLoaded', scheduleHide);
 })();
