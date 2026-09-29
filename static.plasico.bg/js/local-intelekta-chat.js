@@ -20,20 +20,23 @@
 	var TITLE_ONLINE = 'Пласико на линия';
 	var SUB_ONLINE =
 		'Пишете ни - отговаряме веднага в рамките на работното ни време 9:00-18:00 понеделник до петък.';
-	var TITLE_OFFLINE = 'Пласико офлайн';
+	var TITLE_OFFLINE = 'Пласико извън линия';
 	var SUB_OFFLINE =
 		'Пишете ни, ще получите отговор в работно време 9:00-18:00 понеделник до петък по имейл.';
 
-	var NOTE_ONLINE =
-		'Ако не можете да изчакате, оставете имейл - ще ви пишем там.';
 	var NOTE_OFFLINE =
 		'В момента сме извън работно време. Оставете данните и въпроса си и ще получите отговор по имейл когато отново сме на линия.';
+	var ONLINE_LEAD = 'Не се притеснявайте да затворите този прозорец, чатът се запазва.';
+	var CONTACT_KEY = 'plasico_chat_contact';
+	var PHONE_PLACEHOLDER = 'Телефон';
+	var PHONE_NEEDED = 'Моля, въведете телефон, за да можем да се свържем с вас.';
+	var PHONE_INVALID =
+		'Моля, въведете валиден телефонен номер (напр. 0888 123 456 или +359 888 123 456).';
 
 	var WELCOME =
-		'Здравей! 👋\n\n' +
+		'Здравей! 👋 ' +
 		'Добре дошъл в Plasico – мястото за технологии, компютри и електроника. 💻✨\n\n' +
-		'Търсиш нов лаптоп, компютър, телефон или аксесоар? Можем да ти помогнем да откриеш подходящия продукт според твоите нужди и бюджет.\n\n' +
-		'Можеш да ни попиташ за продукти, цени, характеристики, наличности или препоръки.\n\n' +
+		'Можеш да ни попиташ за продукти, цени, характеристики, наличности, препоръки и всичко останало. Наш служител ще ти отговори в най-кратък срок.\n\n' +
 		'Какво търсиш днес? 🚀';
 
 	var AUTO_REPLY =
@@ -44,12 +47,27 @@
 	var pendingAutoKeys = Object.create(null);
 	/** Preview mode: 'online' | 'offline' — independent of real API hours */
 	var previewMode = 'online';
+	var previewInitDone = false;
 	/** Match #chat hide breakpoint in local-chat-button.css */
 	var MOBILE_MQ = '(max-width: 990px)';
 	var HOST_DESKTOP =
 		'position:fixed;right:20px;bottom:20px;z-index:2147483000;';
-	var HOST_MOBILE_FS =
-		'position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;height:100dvh;max-height:100dvh;z-index:2147483000;';
+	/** Fullscreen host below the pinned mobile top bar; top offset is filled in at runtime. */
+	function hostMobileFs(topPx) {
+		return (
+			'position:fixed;top:' + topPx + 'px;left:0;right:0;bottom:0;width:100%;' +
+			'height:calc(100% - ' + topPx + 'px);height:calc(100dvh - ' + topPx + 'px);' +
+			'max-height:calc(100dvh - ' + topPx + 'px);z-index:2147483000;'
+		);
+	}
+
+	/** Bottom edge of the site top bar if it is currently on screen (sticky on mobile). */
+	function siteHeaderOffset() {
+		var header = document.querySelector('body > header');
+		if (!header) return 0;
+		var bottom = header.getBoundingClientRect().bottom;
+		return bottom > 0 ? Math.round(bottom) : 0;
+	}
 	var WRAP_DESKTOP = 'display:flex;flex-direction:column;align-items:flex-end';
 	var WRAP_MOBILE_FS =
 		'display:flex;flex-direction:column;align-items:stretch;width:100%;height:100%;';
@@ -82,7 +100,7 @@
 		var fullscreen = isPanelOpen(root) && isMobileViewport();
 
 		if (fullscreen) {
-			host.style.cssText = HOST_MOBILE_FS;
+			host.style.cssText = hostMobileFs(siteHeaderOffset());
 			host.setAttribute('data-plasico-fs', '1');
 			if (wrap) wrap.style.cssText = WRAP_MOBILE_FS;
 			document.documentElement.style.overflow = 'hidden';
@@ -177,6 +195,18 @@
 		var log = root.querySelector('.log');
 		if (!log) return;
 
+		if (previewMode === 'offline') {
+			var autos = log.querySelectorAll('.msg.agent[data-plasico-auto="1"]');
+			if (autos.length) {
+				withTweaking(function () {
+					for (var a = 0; a < autos.length; a++) autos[a].remove();
+				});
+			}
+			pendingAutoKeys = Object.create(null);
+			updateBadge(root);
+			return;
+		}
+
 		var visitors = log.querySelectorAll('.msg.visitor');
 		if (!visitors.length) return;
 
@@ -239,7 +269,7 @@
 					dot.setAttribute('aria-hidden', 'true');
 					title.appendChild(dot);
 					title.appendChild(
-						document.createTextNode(offline ? ' офлайн' : ' на линия')
+						document.createTextNode(offline ? ' извън линия' : ' на линия')
 					);
 				}
 			}
@@ -256,39 +286,35 @@
 			var legacyIcon = root.querySelector('.plasico-offline-icon');
 			if (legacyIcon) legacyIcon.remove();
 
-			/* Show name/email row in offline preview (matches stock offline form) */
-			var offlineRow = root.querySelector('form.compose .row');
-			if (offlineRow) offlineRow.hidden = !offline;
+			/* Same Име / Имейл / Телефон form in both modes */
+			var contactRow = root.querySelector('form.compose .row');
+			if (contactRow && contactRow.hidden) contactRow.hidden = false;
+			var phone = root.querySelector('form.compose .row input.plasico-phone');
+			if (phone) phone.required = true;
 
-			/* Mid-panel email note copy switches with online/offline preview */
+			var lead = root.querySelector('.plasico-offline-lead');
+			if (lead) {
+				if (lead.textContent !== ONLINE_LEAD) lead.textContent = ONLINE_LEAD;
+				lead.hidden = offline;
+			}
+
+			/* Red out-of-hours notice only offline; its stock email form is replaced by the row */
 			var note = root.querySelector('.note');
 			if (note) {
-				var noteText = note.querySelector(':scope > div:not(form)');
-				if (!noteText) {
-					for (var ni = 0; ni < note.children.length; ni++) {
-						if (note.children[ni].tagName !== 'FORM') {
-							noteText = note.children[ni];
-							break;
-						}
+				note.classList.add('plasico-offline');
+				var noteText = null;
+				for (var ni = 0; ni < note.children.length; ni++) {
+					if (note.children[ni].tagName !== 'FORM') {
+						noteText = note.children[ni];
+						break;
 					}
 				}
-				var wantNote = offline ? NOTE_OFFLINE : NOTE_ONLINE;
-				if (noteText && noteText.textContent !== wantNote) {
-					noteText.textContent = wantNote;
+				if (noteText && noteText.textContent !== NOTE_OFFLINE) {
+					noteText.textContent = NOTE_OFFLINE;
 				}
-				if (offline) {
-					note.hidden = false;
-					var noteForm = note.querySelector('form');
-					if (noteForm) noteForm.hidden = true;
-				} else {
-					var noteFormOn = note.querySelector('form');
-					if (noteFormOn) noteFormOn.hidden = false;
-					if (note.getAttribute('data-plasico-forced-offline') === '1') {
-						note.hidden = true;
-						note.removeAttribute('data-plasico-forced-offline');
-					}
-				}
-				if (offline) note.setAttribute('data-plasico-forced-offline', '1');
+				var noteForm = note.querySelector('form');
+				if (noteForm) noteForm.hidden = true;
+				note.hidden = !offline;
 			}
 
 			var toggle = root.querySelector('.plasico-preview-toggle');
@@ -317,7 +343,7 @@
 			var bar = document.createElement('div');
 			bar.className = 'plasico-preview-toggle';
 			bar.setAttribute('role', 'group');
-			bar.setAttribute('aria-label', 'Преглед: онлайн / офлайн');
+			bar.setAttribute('aria-label', 'Преглед: онлайн / извън линия');
 
 			var label = document.createElement('span');
 			label.className = 'plasico-preview-label';
@@ -335,7 +361,7 @@
 			var offlineBtn = document.createElement('button');
 			offlineBtn.type = 'button';
 			offlineBtn.setAttribute('data-mode', 'offline');
-			offlineBtn.textContent = 'офлайн';
+			offlineBtn.textContent = 'извън линия';
 
 			bar.appendChild(label);
 			bar.appendChild(onlineBtn);
@@ -347,10 +373,22 @@
 				if (!btn) return;
 				previewMode = btn.getAttribute('data-mode') === 'offline' ? 'offline' : 'online';
 				applyHeaderState(root);
+				syncAutoReplies(root);
 			});
 
 			panel.insertBefore(bar, panel.firstChild);
 		}
+	}
+
+	/** Green note shown right above the name/email/phone fields in online mode */
+	function ensureOfflineLead(root) {
+		var compose = root.querySelector('form.compose');
+		if (!compose || root.querySelector('.plasico-offline-lead')) return;
+		var lead = document.createElement('div');
+		lead.className = 'plasico-offline-lead';
+		lead.textContent = ONLINE_LEAD;
+		lead.hidden = true;
+		compose.parentNode.insertBefore(lead, compose);
 	}
 
 	function themeCss() {
@@ -386,6 +424,18 @@
 			'  color:#374151!important;',
 			'}',
 
+			/* Desktop: panel sits above the FAB (host bottom 20 + FAB 56 + gap 12) and
+			   must fit the viewport with a 20px top margin, so cap at 100vh - 108px. */
+			'@media only screen and (min-width: 991px){',
+			'  .panel{',
+			'    width:min(360px, calc(100vw - 40px));max-width:none;',
+			'    height:min(520px, calc(100vh - 108px));',
+			'    height:min(520px, calc(100dvh - 108px));',
+			'    max-height:none;min-height:0;',
+			'  }',
+			'}',
+			'.panel > :not(.log){flex-shrink:0;}',
+			'.log{flex:1 1 auto;min-height:0;overflow-y:auto;}',
 			/* Mobile: open panel fills the viewport (host inset set in JS). */
 			'@media only screen and (max-width: 990px){',
 			'  .panel.open{',
@@ -450,12 +500,20 @@
 			'.msg.agent{background:#f3f4f6!important;border:0!important;color:#374151!important;border-bottom-left-radius:0!important;}',
 
 			'.note{background:#ecfdf5!important;color:#065f46!important;border-top:1px solid #d1fae5!important;}',
+			'.note.plasico-offline{background:#fef2f2!important;color:#991b1b!important;border-top:1px solid #fecaca!important;border-bottom:1px solid #fecaca!important;}',
+			'.plasico-offline-lead{',
+			'  padding:8px 12px;font-size:12px;line-height:1.4;',
+			'  background:#ecfdf5;color:#065f46;border-top:1px solid #d1fae5;',
+			'}',
+			'.plasico-offline-lead[hidden]{display:none!important;}',
 
 			'form.compose{',
 			'  flex-direction:row!important;flex-wrap:wrap!important;align-items:center!important;gap:10px!important;',
 			'  padding:12px 14px 14px!important;border-top:1px solid #e5e7eb!important;background:#fff!important;',
 			'}',
-			'form.compose .row{width:100%!important;order:-1!important;}',
+			'form.compose .row{width:100%!important;order:-1!important;flex-wrap:nowrap;}',
+			'form.compose .row input{flex:1 1 0;min-width:0;}',
+			'form.compose .row input[type="email"]{flex-grow:1.4;}',
 			'form.compose textarea{',
 			'  flex:1!important;width:auto!important;min-width:0!important;height:40px!important;',
 			'  border:0!important;border-bottom:1px solid #d1d5db!important;border-radius:0!important;',
@@ -478,6 +536,30 @@
 			'  width:auto!important;height:auto!important;border-radius:0!important;padding:8px 14px!important;',
 			'  background:' + GREEN + '!important;background-image:none!important;color:#fff!important;',
 			'  font-size:14px!important;font-weight:600!important;',
+			'}',
+
+			/* Short laptop screens; kept last so it overrides the base rules above. */
+			'@media only screen and (min-width: 991px) and (max-height: 800px){',
+			'  .panel{',
+			'    width:min(340px, calc(100vw - 40px));',
+			'    height:min(500px, calc(100vh - 100px));',
+			'    height:min(500px, calc(100dvh - 100px));',
+			'    margin-bottom:10px;',
+			'  }',
+			'  .launcher{width:52px;height:52px;min-width:52px;}',
+			'  .plasico-preview-toggle{padding:4px 12px;}',
+			'  .head{padding:10px 14px 9px!important;}',
+			'  .head h2{font-size:15px!important;}',
+			'  .head p{font-size:11.5px!important;line-height:1.35!important;margin-top:3px!important;}',
+			'  .x{width:28px!important;height:28px!important;min-width:28px!important;font-size:16px!important;}',
+			'  .log{padding:10px 14px!important;gap:10px!important;}',
+			'  .hint{font-size:13px!important;line-height:1.5!important;}',
+			'  .msg{font-size:13px!important;padding:7px 11px;}',
+			'  .note,.plasico-offline-lead{padding:5px 12px;font-size:11.5px;line-height:1.35;}',
+			'  form.compose .row input{padding:5px 6px;font-size:13px;}',
+			'  form.compose{padding:6px 12px 8px!important;gap:6px!important;}',
+			'  form.compose textarea{height:34px!important;padding:6px 4px!important;font-size:13px!important;}',
+			'  form.compose > button.send{width:34px!important;height:34px!important;min-width:34px!important;}',
 			'}'
 		].join('');
 	}
@@ -487,6 +569,7 @@
 		tweaking = true;
 		try {
 			ensurePreviewToggle(root);
+			ensureOfflineLead(root);
 			applyHeaderState(root);
 
 			var ta = root.querySelector('form.compose textarea');
@@ -606,10 +689,37 @@
 					syncAutoReplies(root);
 					var visitors = root.querySelectorAll('.log .msg.visitor');
 					var autos = root.querySelectorAll('.log .msg.agent[data-plasico-auto="1"]');
-					if ((visitors.length && autos.length >= visitors.length) || ++tries > 40) {
+					if (
+						previewMode === 'offline' ||
+						(visitors.length && autos.length >= visitors.length) ||
+						++tries > 40
+					) {
 						clearInterval(timer);
 					}
 				}, 120);
+			});
+		}
+	}
+
+	/** Prefill and remember Име / Имейл / Телефон so returning visitors don't retype them */
+	function wireContactMemory(root) {
+		if (root.__plasicoContactWired) return;
+		var inputs = root.querySelectorAll('form.compose .row input');
+		if (inputs.length < 3) return;
+		root.__plasicoContactWired = true;
+		var saved = {};
+		try {
+			saved = JSON.parse(localStorage.getItem(CONTACT_KEY) || '{}') || {};
+		} catch (e) {}
+		var keys = ['name', 'email', 'phone'];
+		for (var i = 0; i < 3; i++) {
+			if (!inputs[i].value && saved[keys[i]]) inputs[i].value = saved[keys[i]];
+			inputs[i].addEventListener('input', function () {
+				var data = {};
+				for (var j = 0; j < 3; j++) data[keys[j]] = inputs[j].value.trim();
+				try {
+					localStorage.setItem(CONTACT_KEY, JSON.stringify(data));
+				} catch (e) {}
 			});
 		}
 	}
@@ -632,7 +742,14 @@
 			launcher.title = 'Онлайн чат';
 		}
 
+		var realState = window.__plasicoChatState;
+		if (!previewInitDone && realState) {
+			previewInitDone = true;
+			previewMode = realState.online ? 'online' : 'offline';
+		}
+
 		applyDomTweaks(root);
+		wireContactMemory(root);
 		observeLog(root);
 		observeHead(root);
 		wirePanelAndCompose(root);
@@ -703,6 +820,91 @@
 		true
 	);
 
+	function jsString(s) {
+		return (
+			"'" +
+			String(s)
+				.replace(/\\/g, '\\\\')
+				.replace(/'/g, "\\'")
+				.replace(/\n/g, '\\n')
+				.replace(/\r/g, '\\r') +
+			"'"
+		);
+	}
+
+	/**
+	 * Shows the same name/email/phone row in online and offline mode, with email
+	 * and phone required. The API ignores unknown payload keys, so a new phone is
+	 * also appended to the message body. The .note is shown by this script only.
+	 * Each replace is a no-op if upstream changes, leaving the stock widget intact.
+	 */
+	function patchWidgetSource(code) {
+		function sub(re, fn) {
+			code = code.replace(re, fn);
+		}
+		sub(/var API = [^;]+;/, function () {
+			return 'var API = ' + jsString(API_BASE) + ';';
+		});
+		sub(
+			/var offlineFields = el\('div', \{ class: 'row' \}, \[nameInput, emailInput\]\);/,
+			function () {
+				return (
+					"var phoneInput = el('input', { type: 'tel', class: 'plasico-phone', placeholder: " +
+					jsString(PHONE_PLACEHOLDER) +
+					", maxlength: '30', autocomplete: 'tel', 'aria-label': " +
+					jsString(PHONE_PLACEHOLDER) +
+					' });' +
+					"var offlineFields = el('div', { class: 'row' }, [nameInput, emailInput, phoneInput]);"
+				);
+			}
+		);
+		sub(/var state = \{[^;]*\};/, function (m) {
+			return m + 'window.__plasicoChatState = state;';
+		});
+		sub(/offlineFields\.hidden = state\.online \|\| state\.hasEmail;/, function () {
+			return 'offlineFields.hidden = false;';
+		});
+		sub(/emailInput\.required = [^;]+;/, function () {
+			return 'emailInput.required = true;phoneInput.required = true;';
+		});
+		sub(/note\.hidden = !\(state\.online && wrote && !state\.hasEmail\);/, function () {
+			return '';
+		});
+		sub(/if \(!state\.online && !state\.hasEmail && !emailInput\.value\.trim\(\)\) \{/, function () {
+			return 'if (!emailInput.value.trim()) {';
+		});
+		sub(/state\.sending = true;\s*showError\(''\);/, function (m) {
+			return (
+				'var plasicoPhone = phoneInput.value.trim();' +
+				'if (!plasicoPhone) {' +
+				'showError(' +
+				jsString(PHONE_NEEDED) +
+				');phoneInput.focus();return;}' +
+				/* Optional leading +, then digits, spaces, dashes, dots, parentheses; 8-15 digits (E.164 max). */
+				'var plasicoDigits = plasicoPhone.replace(/\\D/g, "").length;' +
+				'if (!/^\\+?[0-9\\s().\\-]+$/.test(plasicoPhone) || plasicoDigits < 8 || plasicoDigits > 15) {' +
+				'showError(' +
+				jsString(PHONE_INVALID) +
+				');phoneInput.focus();return;}' +
+				m
+			);
+		});
+		sub(/if \(emailInput\.value\.trim\(\)\) payload\.email = emailInput\.value\.trim\(\);/, function (m) {
+			return (
+				m +
+				'payload.phone = plasicoPhone;' +
+				"if (storage('get', 'plasico_chat_phone_sent') !== plasicoPhone) {" +
+				'payload.body = body + ' +
+				jsString('\n\n' + PHONE_PLACEHOLDER + ': ') +
+				' + plasicoPhone;}'
+			);
+		});
+		sub(/if \(res\.status === 201\) \{/, function (m) {
+			return m + "storage('set', 'plasico_chat_phone_sent', payload.phone);";
+		});
+		return code;
+	}
+
 	function loadWidget() {
 		if (window.__intelektaChat) {
 			watchForWidget();
@@ -715,10 +917,7 @@
 				return r.text();
 			})
 			.then(function (code) {
-				var patched = code.replace(
-					/var API = [^;]+;/,
-					"var API = '" + API_BASE.replace(/'/g, "\\'") + "';"
-				);
+				var patched = patchWidgetSource(code);
 				var blob = new Blob([patched], { type: 'text/javascript' });
 				var s = document.createElement('script');
 				s.src = URL.createObjectURL(blob);

@@ -47,3 +47,21 @@
 		display: none !important;
 	}
 }
+
+/* Mobile: keep the top bar (menu, logo, phone, search, cart) pinned while scrolling.
+   Site JS still toggles #head.fixed on scroll end; keep #head in flow so the two don't fight. */
+@media only screen and (max-width: 990px) {
+	html {
+		scroll-padding-top: 60px;
+	}
+
+	body > header.cl {
+		position: sticky;
+		top: 0;
+		z-index: 1000;
+	}
+
+	#head.fixed {
+		position: static;
+	}
+}
