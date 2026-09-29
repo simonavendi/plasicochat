@@ -44,6 +44,16 @@
 	var pendingAutoKeys = Object.create(null);
 	/** Preview mode: 'online' | 'offline' — independent of real API hours */
 	var previewMode = 'online';
+	/** Match #chat hide breakpoint in local-chat-button.css */
+	var MOBILE_MQ = '(max-width: 990px)';
+	var HOST_DESKTOP =
+		'position:fixed;right:20px;bottom:20px;z-index:2147483000;';
+	var HOST_MOBILE_FS =
+		'position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;height:100dvh;max-height:100dvh;z-index:2147483000;';
+	var WRAP_DESKTOP = 'display:flex;flex-direction:column;align-items:flex-end';
+	var WRAP_MOBILE_FS =
+		'display:flex;flex-direction:column;align-items:stretch;width:100%;height:100%;';
+	var resizeWired = false;
 
 	function findHost() {
 		var nodes = document.querySelectorAll('body > div');
@@ -58,6 +68,41 @@
 	function isPanelOpen(root) {
 		var panel = root.querySelector('.panel');
 		return !!(panel && panel.classList.contains('open'));
+	}
+
+	function isMobileViewport() {
+		return !!(window.matchMedia && window.matchMedia(MOBILE_MQ).matches);
+	}
+
+	/** Open panel on mobile → edge-to-edge; otherwise keep floating desktop host. */
+	function syncFullscreenLayout(host, root) {
+		if (!host || !root) return;
+		var panel = root.querySelector('.panel');
+		var wrap = panel && panel.parentElement;
+		var fullscreen = isPanelOpen(root) && isMobileViewport();
+
+		if (fullscreen) {
+			host.style.cssText = HOST_MOBILE_FS;
+			host.setAttribute('data-plasico-fs', '1');
+			if (wrap) wrap.style.cssText = WRAP_MOBILE_FS;
+			document.documentElement.style.overflow = 'hidden';
+		} else {
+			host.style.cssText = HOST_DESKTOP;
+			host.removeAttribute('data-plasico-fs');
+			if (wrap) wrap.style.cssText = WRAP_DESKTOP;
+			if (!document.querySelector('[data-plasico-fs="1"]')) {
+				document.documentElement.style.overflow = '';
+			}
+		}
+	}
+
+	function wireResizeSync() {
+		if (resizeWired) return;
+		resizeWired = true;
+		window.addEventListener('resize', function () {
+			var host = findHost();
+			if (host && host.shadowRoot) syncFullscreenLayout(host, host.shadowRoot);
+		});
 	}
 
 	function visitorText(vis) {
@@ -338,6 +383,17 @@
 			'  color:#374151!important;',
 			'}',
 
+			/* Mobile: open panel fills the viewport (host inset set in JS). */
+			'@media only screen and (max-width: 990px){',
+			'  .panel.open{',
+			'    width:100%!important;max-width:none!important;',
+			'    height:100%!important;max-height:none!important;',
+			'    margin:0!important;border-radius:0!important;',
+			'    box-shadow:none!important;flex:1 1 auto!important;',
+			'  }',
+			'  .panel.open ~ .launcher{display:none!important;}',
+			'}',
+
 			'.plasico-preview-toggle{',
 			'  display:flex;align-items:center;gap:6px;flex-wrap:wrap;',
 			'  padding:8px 12px;background:#f3f4f6;border-bottom:1px solid #e5e7eb;',
@@ -496,6 +552,7 @@
 		root.__plasicoPanelWired = true;
 
 		var panel = root.querySelector('.panel');
+		var hostEl = root.host || findHost();
 		if (panel && window.MutationObserver) {
 			var wasOpen = isPanelOpen(root);
 			new MutationObserver(function () {
@@ -503,6 +560,7 @@
 				if (open && !wasOpen) clearUnread(root);
 				else if (!open && wasOpen) updateBadge(root);
 				wasOpen = open;
+				syncFullscreenLayout(hostEl, root);
 			}).observe(panel, { attributes: true, attributeFilter: ['class'] });
 		}
 
@@ -512,6 +570,7 @@
 				setTimeout(function () {
 					if (isPanelOpen(root)) clearUnread(root);
 					applyDomTweaks(root);
+					syncFullscreenLayout(hostEl, root);
 				}, 0);
 			});
 		}
@@ -521,6 +580,7 @@
 			closeBtn.addEventListener('click', function () {
 				setTimeout(function () {
 					updateBadge(root);
+					syncFullscreenLayout(hostEl, root);
 				}, 0);
 			});
 		}
@@ -565,6 +625,8 @@
 		wirePanelAndCompose(root);
 		syncAutoReplies(root);
 		updateBadge(root);
+		syncFullscreenLayout(host, root);
+		wireResizeSync();
 		return true;
 	}
 
