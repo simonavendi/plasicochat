@@ -28,6 +28,40 @@
 		'В момента сме извън работно време. Оставете данните и въпроса си и ще получите отговор по имейл когато отново сме на линия.';
 	var ONLINE_LEAD = 'Не се притеснявайте да затворите този прозорец, чатът се запазва.';
 	var CONTACT_KEY = 'plasico_chat_contact';
+	var PHONE_RE = /^\+?[0-9\s().\-]+$/;
+	var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+	/** Optional leading +, digits, spaces, dashes, dots, parentheses; 8-15 digits (E.164 max). */
+	function isValidPhone(v) {
+		v = String(v || '').trim();
+		var digits = v.replace(/\D/g, '').length;
+		return PHONE_RE.test(v) && digits >= 8 && digits <= 15;
+	}
+
+	function readContact() {
+		try {
+			return JSON.parse(localStorage.getItem(CONTACT_KEY) || 'null');
+		} catch (e) {
+			return null;
+		}
+	}
+
+	/** Name is optional in the form; email and phone must be valid to skip the fields. */
+	function contactComplete(c) {
+		return !!(c && EMAIL_RE.test(String(c.email || '').trim()) && isValidPhone(c.phone));
+	}
+
+	/* Read by the patched widget source (see patchWidgetSource). */
+	window.__plasicoPhoneOk = isValidPhone;
+	window.__plasicoContactHidden = contactComplete(readContact());
+	window.__plasicoContactSaved = function (contact) {
+		try {
+			localStorage.setItem(CONTACT_KEY, JSON.stringify(contact));
+		} catch (e) {}
+		window.__plasicoContactHidden = contactComplete(contact);
+		var host = findHost();
+		if (host && host.shadowRoot) applyHeaderState(host.shadowRoot);
+	};
 	var PHONE_PLACEHOLDER = 'Телефон';
 	var PHONE_NEEDED = 'Моля, въведете телефон, за да можем да се свържем с вас.';
 	var PHONE_INVALID =
@@ -286,11 +320,12 @@
 			var legacyIcon = root.querySelector('.plasico-offline-icon');
 			if (legacyIcon) legacyIcon.remove();
 
-			/* Same Име / Имейл / Телефон form in both modes */
+			/* Same Име / Имейл / Телефон form in both modes; hidden once valid details are saved */
+			var hideContact = !!window.__plasicoContactHidden;
 			var contactRow = root.querySelector('form.compose .row');
-			if (contactRow && contactRow.hidden) contactRow.hidden = false;
-			var phone = root.querySelector('form.compose .row input.plasico-phone');
-			if (phone) phone.required = true;
+			if (contactRow && contactRow.hidden !== hideContact) contactRow.hidden = hideContact;
+			var rowInputs = contactRow ? contactRow.querySelectorAll('input') : [];
+			for (var ri = 1; ri < rowInputs.length; ri++) rowInputs[ri].required = !hideContact;
 
 			var lead = root.querySelector('.plasico-offline-lead');
 			if (lead) {
@@ -380,7 +415,7 @@
 		}
 	}
 
-	/** Green note shown right above the name/email/phone fields in online mode */
+	/** Green note above the compose area in online mode, shown even when the contact fields are hidden */
 	function ensureOfflineLead(root) {
 		var compose = root.querySelector('form.compose');
 		if (!compose || root.querySelector('.plasico-offline-lead')) return;
@@ -701,26 +736,19 @@
 		}
 	}
 
-	/** Prefill and remember Име / Имейл / Телефон so returning visitors don't retype them */
+	/**
+	 * Prefill Име / Имейл / Телефон from the details saved after a successful send,
+	 * so hidden fields still carry them on later messages.
+	 */
 	function wireContactMemory(root) {
 		if (root.__plasicoContactWired) return;
 		var inputs = root.querySelectorAll('form.compose .row input');
 		if (inputs.length < 3) return;
 		root.__plasicoContactWired = true;
-		var saved = {};
-		try {
-			saved = JSON.parse(localStorage.getItem(CONTACT_KEY) || '{}') || {};
-		} catch (e) {}
+		var saved = readContact() || {};
 		var keys = ['name', 'email', 'phone'];
 		for (var i = 0; i < 3; i++) {
 			if (!inputs[i].value && saved[keys[i]]) inputs[i].value = saved[keys[i]];
-			inputs[i].addEventListener('input', function () {
-				var data = {};
-				for (var j = 0; j < 3; j++) data[keys[j]] = inputs[j].value.trim();
-				try {
-					localStorage.setItem(CONTACT_KEY, JSON.stringify(data));
-				} catch (e) {}
-			});
 		}
 	}
 
@@ -834,8 +862,9 @@
 
 	/**
 	 * Shows the same name/email/phone row in online and offline mode, with email
-	 * and phone required. The API ignores unknown payload keys, so a new phone is
-	 * also appended to the message body. The .note is shown by this script only.
+	 * and phone required, until valid details have been sent once (then hidden).
+	 * The API ignores unknown payload keys, so a new phone is also appended to the
+	 * message body. The .note is shown by this script only.
 	 * Each replace is a no-op if upstream changes, leaving the stock widget intact.
 	 */
 	function patchWidgetSource(code) {
@@ -862,27 +891,29 @@
 			return m + 'window.__plasicoChatState = state;';
 		});
 		sub(/offlineFields\.hidden = state\.online \|\| state\.hasEmail;/, function () {
-			return 'offlineFields.hidden = false;';
+			return 'offlineFields.hidden = !!window.__plasicoContactHidden;';
 		});
 		sub(/emailInput\.required = [^;]+;/, function () {
-			return 'emailInput.required = true;phoneInput.required = true;';
+			return 'emailInput.required = phoneInput.required = !offlineFields.hidden;';
 		});
 		sub(/note\.hidden = !\(state\.online && wrote && !state\.hasEmail\);/, function () {
 			return '';
 		});
+		/* A failed check re-shows the fields so the visitor can fix them. */
+		var reveal = 'window.__plasicoContactHidden = false;offlineFields.hidden = false;';
 		sub(/if \(!state\.online && !state\.hasEmail && !emailInput\.value\.trim\(\)\) \{/, function () {
-			return 'if (!emailInput.value.trim()) {';
+			return 'if (!emailInput.value.trim()) {' + reveal;
 		});
 		sub(/state\.sending = true;\s*showError\(''\);/, function (m) {
 			return (
 				'var plasicoPhone = phoneInput.value.trim();' +
 				'if (!plasicoPhone) {' +
+				reveal +
 				'showError(' +
 				jsString(PHONE_NEEDED) +
 				');phoneInput.focus();return;}' +
-				/* Optional leading +, then digits, spaces, dashes, dots, parentheses; 8-15 digits (E.164 max). */
-				'var plasicoDigits = plasicoPhone.replace(/\\D/g, "").length;' +
-				'if (!/^\\+?[0-9\\s().\\-]+$/.test(plasicoPhone) || plasicoDigits < 8 || plasicoDigits > 15) {' +
+				'if (!window.__plasicoPhoneOk(plasicoPhone)) {' +
+				reveal +
 				'showError(' +
 				jsString(PHONE_INVALID) +
 				');phoneInput.focus();return;}' +
@@ -900,7 +931,12 @@
 			);
 		});
 		sub(/if \(res\.status === 201\) \{/, function (m) {
-			return m + "storage('set', 'plasico_chat_phone_sent', payload.phone);";
+			return (
+				m +
+				"storage('set', 'plasico_chat_phone_sent', payload.phone);" +
+				'window.__plasicoContactSaved({ name: nameInput.value.trim(), email: emailInput.value.trim(), phone: plasicoPhone });' +
+				'offlineFields.hidden = !!window.__plasicoContactHidden;'
+			);
 		});
 		return code;
 	}
