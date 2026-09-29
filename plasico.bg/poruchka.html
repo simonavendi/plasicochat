@@ -1,0 +1,511 @@
+﻿<!DOCTYPE html>
+<html lang="bg">
+<head>
+	<title>Вашата поръчка • Plasico.bg</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="robots" content="noindex, nofollow" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" type="text/css" href="../static.plasico.bg/plasico170.css" />
+	<link rel="stylesheet" type="text/css" href="../static.plasico.bg/css/local-chat-button.css?v=3" />
+	<link rel="stylesheet" type="text/css" href="../static.plasico.bg/css/local-leasing-modal.css" />
+	<link rel="shortcut icon" type="image/ico" href="../static.plasico.bg/favicon.ico" />
+	<style>
+		#cart-empty-msg { padding: 30px 10px; text-align: center; color: #666; }
+		#cart-empty-msg a { color: #288000; }
+		#checkout #cart-table .act { cursor: pointer; }
+		#checkout .local-note { font-size: 12px; color: #999; margin: 8px 0 0; }
+	</style>
+	<script>
+		window.eur_price_render = 0;
+		window.eur_price_factoring = 0.51129188119622;
+		window.eur_price_sign = 'лв.';
+	</script>
+	<script src="../static.plasico.bg/js/local-consent-fix.js"></script>
+	<script src="../static.plasico.bg/js/local-intelekta-chat.js?v=10"></script>
+	<script type="text/javascript" defer src="../static.plasico.bg/plasico165.js"></script>
+	<script type="text/javascript" defer src="../static.plasico.bg/js/efd0ab8cb2638f24bfd6f09fa1961145.js"></script>
+	<script src="../static.plasico.bg/js/local-cart.js"></script>
+</head>
+<body id="checkout-page">
+	<header class="cl rel">
+		<div class="pw">
+			<div id="top-line" class="cl">
+				<nav class="fl">
+					<ul class="cl">
+						<li><a href="index.html"><img src="../static.plasico.bg/images/transp.png" width="16" height="13" class="spr rel home-icon" alt="Начало" /></a></li>
+						<li><a href="index.html">Магазини</a></li>
+						<li><a href="index.html">Сервиз</a></li>
+						<li><a href="index.html">За нас</a></li>
+						<li><a href="index.html">Блог</a></li>
+						<li><a href="index.html">Контакти</a></li>
+					</ul>
+				</nav>
+				<div id="user" class="fr">
+					<ul>
+						<li>
+							<span class="b pnt">Вход</span><span> или </span><span class="b pnt">Регистрация</span><span> или чрез </span>
+							<span class="sprp ggl-icon-sm fr" title="Google+"></span>
+							<span class="sprp fb-icon-sm fr" title="Facebook"></span>
+						</li>
+					</ul>
+				</div>
+			</div>
+			<div id="head" class="cl">
+				<a id="logo" href="index.html" class="fl" title="Магазин за компютърна техника в Plasico.bg">
+					<img width="174" height="64" src="../static.plasico.bg/images/plasico_logo.png" alt="Plasico.bg" />
+				</a>
+				<span class="sprp spr navbtn"></span>
+				<form action="index.html" method="get" id="search" class="fl rel cl search-form">
+					<input type="text" name="search" value="" placeholder="Търси продукт..." autocomplete="off" />
+					<input type="image" src="../static.plasico.bg/images/transp.png" width="23" height="23" class="spr go" alt="Търси" />
+				</form>
+				<span id="chat" class="fl" title="Онлайн чат" role="button">
+					<img src="../static.plasico.bg/images/transp.png" width="33" height="26" class="spr chat-icon fl" alt="Чат" />
+					Онлайн <br />чат
+				</span>
+				<span id="fav" class="fl pnt clever-hide">
+					<img src="../static.plasico.bg/images/transp.png" width="27" height="24" class="spr fav-icon fl" alt="Любими" />
+					Списък <br />с любими
+					<span class="abs dot hide">0</span>
+				</span>
+				<a href="tel:0700 20 810" id="top-phone" class="fl">
+					<img src="../static.plasico.bg/images/transp.png" width="33" height="26" class="spr phone-icon fl" alt="Телефон" />
+					0700 20 810
+				</a>
+				<span id="cart" data-url="poruchka.html" class="fr pnt rel">
+					<img src="../static.plasico.bg/images/transp.png" width="34" height="24" class="abs spr cart-icon" alt="Количка" />
+					<span class="abs dot" id="cart-dot">0</span>
+					<span class="abs shadow-hider"></span>
+				</span>
+			</div>
+		</div>
+	</header>
+
+	<main class="cl">
+		<div class="pw cl">
+			<div id="checkout" class="fr">
+				<h2 id="checkout-cart">Количка</h2>
+				<div class="bgff">
+					<div id="cart-empty-msg" class="hide">Количката е празна. <a href="index.html">Към продуктите</a></div>
+					<table id="cart-table" cellpadding="0" cellspacing="0">
+						<tbody id="cart-body">
+							<tr id="cart-head-row">
+								<th colspan="3" class="l">Продукт</th>
+								<th class="c">Единична цена</th>
+								<th class="c">Брой</th>
+								<th class="r">Общо (с ДДС)</th>
+							</tr>
+						</tbody>
+						<tfoot id="cart-foot">
+							<tr class="totals code">
+								<td class="r nw nb" colspan="5">Промо код</td>
+								<td class="r nw nb">
+									<form id="code" method="post" action="#" onsubmit="return false;">
+										<input type="text" value="" name="code" />
+										<input type="image" src="../static.plasico.bg/images/transp.png" width="20" height="20" class="spr reload" alt="OK" />
+									</form>
+								</td>
+							</tr>
+							<tr class="totals grand">
+								<td class="r nw" colspan="5">Сума за плащане с ДДС</td>
+								<td class="r nw"><span id="cart-grand">0.00</span> €&nbsp;&nbsp;&nbsp;</td>
+							</tr>
+						</tfoot>
+					</table>
+				</div>
+
+				<a href="index.html" class="but">Продължи пазаруването</a>
+
+				<div id="checkout-filled">
+					<h2 id="checkout-data">Данни за доставка</h2>
+					<div id="checkout-type" class="box bgff">
+						<div class="cl">
+							<label class="clicked">
+								<input type="radio" autocomplete="off" name="type" value="1" checked />&nbsp;ПОРЪЧКА КАТО ГОСТ
+							</label>
+							<label>
+								<input type="radio" autocomplete="off" name="type" value="2" />&nbsp;ИМАМ РЕГИСТРАЦИЯ
+							</label>
+							<label>
+								<input type="radio" autocomplete="off" name="type" value="3" />&nbsp;БЪРЗА ПОРЪЧКА <span>(без регистрация)</span>
+							</label>
+							<label>
+								<input type="radio" autocomplete="off" name="type" value="4" />&nbsp;РЕЗЕРВИРАЙ <span>(в наш магазин)</span>
+							</label>
+						</div>
+					</div>
+
+					<div id="checkout-pane">
+						<div id="checkout-new" class="oh">
+							<form method="post" action="#" class="cl" id="checkout-form" onsubmit="return false;">
+								<div class="bgff">
+									<div id="checkout-register" class="oh">
+										<div class="fl address-new">
+											<label>Име, презиме и фамилия *</label>
+											<input type="text" name="name" value="" />
+											<label>Ел. поща *</label>
+											<input type="text" name="email" value="" />
+											<label>
+												<input type="checkbox" name="register" value="1" /> Запомни ме
+											</label>
+										</div>
+										<div class="fr address-new">
+											<a href="#" class="oauth facebook sprp" onclick="return false;">Влез с Facebook</a>
+											<a href="#" class="oauth google sprp" onclick="return false;">Влез с Google</a>
+										</div>
+									</div>
+
+									<div id="checkout-addresses" class="oh">
+										<h3>Адрес за доставка:</h3>
+										<div class="cl">
+											<div class="fl address-new">
+												<label>Име, презиме и фамилия на получателя *</label>
+												<input type="text" name="address_person" value="" />
+												<label>Телефон за контакт *</label>
+												<input type="text" name="address_phone" class="telephone" value="" />
+												<label>Държава *</label>
+												<select name="country_id">
+													<option value="0">Държава...</option>
+													<option value="33" selected>Bulgaria</option>
+													<option value="222">United Kingdom</option>
+													<option value="223">United States</option>
+													<option value="81">Germany</option>
+													<option value="73">France</option>
+												</select>
+
+												<div class="checkout-payments">
+													<div class="box">
+														<ul>
+															<li>
+																<label class="nobb clicked">
+																	<input type="radio" autocomplete="off" name="courier_id" data-key="speedy_new" value="2" checked />
+																	<em class="recc">Препоръчан вариант</em>
+																	<img src="../static.plasico.bg/images/transp.png" width="32" height="32" alt="Спиди" />
+																	<span>Спиди</span>
+																	<span>4.99 €&nbsp;&nbsp;&nbsp;</span>
+																</label>
+																<div class="ship-to">
+																	<div class="cl methods">
+																		<label class="fl">
+																			<input type="radio" name="ship_to_id" value="1" autocomplete="off" checked /> До адрес
+																		</label>
+																		<label class="fl">
+																			<input type="radio" name="ship_to_id" value="2" autocomplete="off" /> До офис
+																		</label>
+																	</div>
+																	<div class="cl inputs">
+																		<div class="address">
+																			<div class="box">
+																				<label class="label">Населено място</label>
+																				<input type="text" name="address_city" value="" autocomplete="off" />
+																			</div>
+																			<div class="box">
+																				<label class="label">Адрес</label>
+																				<textarea name="address_address" style="height:99px" placeholder="Квартал, улица, номер..."></textarea>
+																			</div>
+																		</div>
+																	</div>
+																</div>
+															</li>
+															<li>
+																<label class="nobb">
+																	<input type="radio" autocomplete="off" name="courier_id" data-key="econt" value="1" />
+																	<img src="../static.plasico.bg/images/transp.png" width="32" height="32" alt="Еконт" />
+																	<span>Еконт</span>
+																	<span>4.99 €&nbsp;&nbsp;&nbsp;</span>
+																</label>
+															</li>
+															<li>
+																<label class="nobb">
+																	<input type="radio" autocomplete="off" name="courier_id" data-key="shop" value="3" />
+																	<img src="../static.plasico.bg/images/transp.png" width="32" height="32" alt="Магазин" />
+																	<span>Вземане от магазин</span>
+																	<span>0.00 €&nbsp;&nbsp;&nbsp;</span>
+																</label>
+															</li>
+														</ul>
+													</div>
+												</div>
+											</div>
+
+											<div class="fr address-new">
+												<h3 style="margin-top:0;border:0;padding-top:0;">Плащане</h3>
+												<div class="checkout-payments">
+													<div class="box hw">
+														<ul>
+															<li>
+																<label class="nobb clicked">
+																	<input type="radio" name="payment_id" value="1" checked autocomplete="off" />
+																	<span>Наложен платеж</span>
+																</label>
+															</li>
+															<li>
+																<label class="nobb">
+																	<input type="radio" name="payment_id" value="2" autocomplete="off" />
+																	<span>Банков превод</span>
+																</label>
+															</li>
+															<li>
+																<label class="nobb">
+																	<input type="radio" name="payment_id" value="3" autocomplete="off" />
+																	<span>На изплащане</span>
+																</label>
+															</li>
+														</ul>
+													</div>
+												</div>
+												<p class="local-note">Локална демо поръчка — формулярът не изпраща данни към сървъра.</p>
+											</div>
+										</div>
+									</div>
+								</div>
+
+								<div class="cl">
+									<div class="fr">
+										<label class="conditions">
+											<span class="fbox">
+												<input type="checkbox" name="approve_conditions" autocomplete="off" value="1" />
+												<span class="lb">Имам навършени 18 години и съм съгласен с <span class="cbox">общите условия и начина на обработка на личните ми данни</span></span>
+											</span>
+										</label>
+										<label class="conditions phonecall">
+											<span class="fbox">
+												<input type="checkbox" name="phonecall_confirm" autocomplete="off" value="1" />
+												<span class="lb">Желая потвърждение на поръчката по телефон</span>
+											</span>
+										</label>
+									</div>
+								</div>
+								<button type="button" class="checkout-finish btn js-open-leasing">Купи</button>
+							</form>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div id="checkout-steps">
+				<a href="#checkout-cart" class="clicked">
+					<span class="circle">1</span>
+					<img src="../static.plasico.bg/images/transp.png" width="34" height="24" class="spr cart" alt="Количка" />
+					<p>Количка</p>
+				</a>
+				<img src="../static.plasico.bg/images/transp.png" width="24" height="13" class="spr arr-down" alt="" />
+				<a href="#checkout-data">
+					<span class="circle">2</span>
+					<img src="../static.plasico.bg/images/transp.png" width="26" height="27" class="spr shipment" alt="Доставка, плащане и куриер" />
+					<p>Доставка, плащане и куриер</p>
+				</a>
+				<img src="../static.plasico.bg/images/transp.png" width="24" height="13" class="spr arr-down" alt="" />
+				<a href="#checkout-data">
+					<span class="circle">3</span>
+					<img src="../static.plasico.bg/images/transp.png" width="26" height="22" class="spr confirm" alt="Потвърждение" />
+					<p>Обобщение на поръчката</p>
+				</a>
+			</div>
+		</div>
+	</main>
+
+	<footer>
+		<div id="top-footer" class="pw">
+			<div id="why" class="cl">
+				<span class="fl cl">
+					<img src="../static.plasico.bg/images/transp.png" width="36" height="44" class="spr service-icon" alt="Сервизен център" />
+					<p><b>Специализиран</b><br />сервизен център</p>
+				</span>
+				<span class="fl cl">
+					<img src="../static.plasico.bg/images/transp.png" width="39" height="44" class="spr leasing-icon" alt="Лизинг" />
+					<p><b>Онлайн</b><br />лизинг</p>
+				</span>
+				<span class="fl cl">
+					<img src="../static.plasico.bg/images/transp.png" width="41" height="44" class="spr return-icon" alt="Връщане" />
+					<p><b>Връщане</b><br />на продукта</p>
+				</span>
+				<span class="fl cl">
+					<img src="../static.plasico.bg/images/transp.png" width="30" height="44" class="spr protection-icon" alt="Плащане" />
+					<p><b>Защитено</b><br />плащане</p>
+				</span>
+			</div>
+		</div>
+		<div id="sub-footer" class="cl">
+			<div id="payments" class="cl pw">
+				<span class="ft fl">Начини на плащане</span>
+				<div class="fl">
+					<span class="cimg"><img width="40" height="35" alt="Наложен платеж" src="../static.plasico.bg/resources/nalojen_platej.gif" /></span>
+					<span class="cimg"><img width="40" height="35" alt="Банков превод" src="../static.plasico.bg/resources/bankov_pyt.gif" /></span>
+					<span class="cimg"><img width="40" height="35" alt="На изплащане" src="../static.plasico.bg/resources/150218155611trusted-handshake-icon.png" /></span>
+				</div>
+			</div>
+			<div id="copyright">
+				<div class="pw cl">
+					<span class="fl">&copy; 2026 <a href="index.html" class="plgr">Plasico.bg</a>. Локална демо количка.</span>
+				</div>
+			</div>
+		</div>
+	</footer>
+
+	<script src="../static.plasico.bg/js/local-leasing-modal.js"></script>
+	<script>
+	(function () {
+		var Cart = window.PlasicoCart;
+		if (!Cart) return;
+
+		var TRANSP = '../static.plasico.bg/images/transp.png';
+
+		function esc(s) {
+			return String(s == null ? '' : s)
+				.replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;')
+				.replace(/"/g, '&quot;');
+		}
+
+		function moneyPlain(n) {
+			return (Number(n) || 0).toFixed(2);
+		}
+
+		function total(items) {
+			return items.reduce(function (sum, p) {
+				return sum + (Number(p.price) || 0) * (parseInt(p.qty, 10) || 0);
+			}, 0);
+		}
+
+		function headRowHtml() {
+			return (
+				'<tr id="cart-head-row">' +
+				'<th colspan="3" class="l">Продукт</th>' +
+				'<th class="c">Единична цена</th>' +
+				'<th class="c">Брой</th>' +
+				'<th class="r">Общо (с ДДС)</th>' +
+				'</tr>'
+			);
+		}
+
+		function rowHtml(p) {
+			var href = esc(p.href || '#');
+			var img = esc(p.img || TRANSP);
+			var qty = Math.max(1, parseInt(p.qty, 10) || 1);
+			var price = Number(p.price) || 0;
+			var line = price * qty;
+			var old = p.oldPrice != null ? Number(p.oldPrice) : null;
+			var priceBlock =
+				old != null && old > price
+					? '<span class="oldprice">' + moneyPlain(old) + ' €&nbsp;&nbsp;&nbsp;</span><span class="price">' + moneyPlain(price) + ' €&nbsp;&nbsp;&nbsp;</span>'
+					: '<span class="price">' + moneyPlain(price) + ' €&nbsp;&nbsp;&nbsp;</span>';
+
+			return (
+				'<tr data-id="' + esc(p.id) + '">' +
+				'<td class="c"><a href="' + href + '" class="img"><img src="' + img + '" alt="' + esc(p.title) + '"></a></td>' +
+				'<td class="l"><a href="' + href + '">' + esc(p.title) + '</a>' +
+				(p.cat ? '<span class="cat">' + esc(p.cat) + '</span>' : '') +
+				'</td>' +
+				'<td class="c"><a class="act spr del" href="#" data-id="' + esc(p.id) + '" title="Премахни"></a></td>' +
+				'<td class="r">' + priceBlock + '</td>' +
+				'<td class="c nw">' +
+				'<a class="act spr dec" href="#" data-id="' + esc(p.id) + '"></a> ' +
+				'<span class="quan">' + esc(qty) + '</span> ' +
+				'<a class="act spr inc" href="#" data-id="' + esc(p.id) + '"></a>' +
+				'</td>' +
+				'<td class="r nw"><span class="subtotal">' + moneyPlain(line) + '</span> €&nbsp;&nbsp;&nbsp;</td>' +
+				'</tr>'
+			);
+		}
+
+		function render() {
+			var items = Cart.getItems();
+			var body = document.getElementById('cart-body');
+			var empty = document.getElementById('cart-empty-msg');
+			var table = document.getElementById('cart-table');
+			var foot = document.getElementById('cart-foot');
+			var filled = document.getElementById('checkout-filled');
+
+			Cart.updateBadge();
+
+			if (!items.length) {
+				body.innerHTML = headRowHtml();
+				empty.classList.remove('hide');
+				if (table) table.classList.add('hide');
+				if (foot) foot.classList.add('hide');
+				if (filled) filled.classList.add('hide');
+				return;
+			}
+
+			empty.classList.add('hide');
+			if (table) table.classList.remove('hide');
+			if (foot) foot.classList.remove('hide');
+			if (filled) filled.classList.remove('hide');
+
+			body.innerHTML = headRowHtml() + items.map(rowHtml).join('');
+			document.getElementById('cart-grand').textContent = moneyPlain(total(items));
+
+			var priceHost = document.getElementById('slim-cart-price-host');
+			if (!priceHost) {
+				priceHost = document.createElement('div');
+				priceHost.id = 'slim-cart-price-host';
+				priceHost.className = 'prod-price';
+				priceHost.style.display = 'none';
+				priceHost.innerHTML = '<span class="price"></span>';
+				document.body.appendChild(priceHost);
+			}
+			var t = total(items);
+			var parts = t.toFixed(2).split('.');
+			priceHost.querySelector('.price').innerHTML =
+				parts[0] + '.<sup class="sup">' + parts[1] + '</sup> <span class="curr">€</span>';
+		}
+
+		document.addEventListener('click', function (e) {
+			var t = e.target;
+			while (t && t !== document) {
+				if (t.classList && t.classList.contains('del') && t.getAttribute('data-id')) {
+					e.preventDefault();
+					Cart.removeItem(t.getAttribute('data-id'));
+					render();
+					return;
+				}
+				if (t.classList && t.classList.contains('inc') && t.getAttribute('data-id')) {
+					e.preventDefault();
+					var idInc = t.getAttribute('data-id');
+					var itemsInc = Cart.getItems();
+					for (var i = 0; i < itemsInc.length; i++) {
+						if (String(itemsInc[i].id) === String(idInc)) {
+							Cart.setQty(idInc, (parseInt(itemsInc[i].qty, 10) || 1) + 1);
+							break;
+						}
+					}
+					render();
+					return;
+				}
+				if (t.classList && t.classList.contains('dec') && t.getAttribute('data-id')) {
+					e.preventDefault();
+					var idDec = t.getAttribute('data-id');
+					var itemsDec = Cart.getItems();
+					for (var j = 0; j < itemsDec.length; j++) {
+						if (String(itemsDec[j].id) === String(idDec)) {
+							var q = (parseInt(itemsDec[j].qty, 10) || 1) - 1;
+							if (q < 1) Cart.removeItem(idDec);
+							else Cart.setQty(idDec, q);
+							break;
+						}
+					}
+					render();
+					return;
+				}
+				t = t.parentNode;
+			}
+		});
+
+		document.querySelectorAll('#checkout-type input[name="type"]').forEach(function (radio) {
+			radio.addEventListener('change', function () {
+				document.querySelectorAll('#checkout-type label').forEach(function (lab) {
+					lab.classList.remove('clicked');
+				});
+				if (radio.parentNode) radio.parentNode.classList.add('clicked');
+			});
+		});
+
+		document.addEventListener('DOMContentLoaded', render);
+		window.addEventListener('plasico-cart-changed', render);
+		window.addEventListener('load', render);
+	})();
+	</script>
+</body>
+</html>

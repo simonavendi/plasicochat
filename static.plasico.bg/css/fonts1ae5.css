@@ -1,0 +1,11 @@
+@font-face {
+    font-family: 'exo2l';
+    src: url('../../external.html?link=https://static.plasico.bg/fonts/Exo2-Light-webfont.eot');
+    src: url('../../external.html?link=https://static.plasico.bg/fonts/Exo2-Light-webfont.eot?#iefix') format('embedded-opentype'),
+         url('../../external.html?link=https://static.plasico.bg/fonts/Exo2-Light-webfont.woff') format('woff'),
+         url('../../external.html?link=https://static.plasico.bg/fonts/Exo2-Light-webfont.ttf') format('truetype'),
+         url('../../external.html?link=https://static.plasico.bg/fonts/Exo2-Light-webfont.svg#playbold') format('svg');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}

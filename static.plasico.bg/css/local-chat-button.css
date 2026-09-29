@@ -1,0 +1,49 @@
+/* Live chat control: match search .go green button (#39B54A) */
+#chat {
+	background-color: #07a857;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8A2.5 2.5 0 0 1 17.5 16H10l-4.2 3.15A.75.75 0 0 1 4.5 18.5V16A2.5 2.5 0 0 1 4 13.5v-8Z' fill='%23fff'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: center;
+	background-size: 22px 22px;
+	width: 48px;
+	height: 36px;
+	margin: 25px 0 0 8px;
+	padding: 0;
+	color: transparent;
+	font-size: 0;
+	line-height: 0;
+	overflow: hidden;
+	box-sizing: border-box;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	float: left;
+}
+
+#chat:hover {
+	background-color: #06964c;
+	color: transparent;
+}
+
+#chat .chat-icon {
+	/* hide sprite; SVG is painted on #chat */
+	opacity: 0;
+	float: none;
+	margin: 0;
+	width: 1px;
+	height: 1px;
+}
+
+#head.fixed #chat {
+	margin-top: 15px;
+}
+
+/* Mobile header is tight (search / phone / cart) — hide header chat.
+   Floating circular launcher covers chat on small screens. */
+@media only screen and (max-width: 990px) {
+	#search ~ #chat,
+	#chat {
+		display: none !important;
+	}
+}

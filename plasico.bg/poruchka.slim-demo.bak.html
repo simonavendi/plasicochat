@@ -1,0 +1,220 @@
+﻿<!DOCTYPE html>
+<html lang="bg">
+<head>
+	<title>Количка • Plasico.bg (slim)</title>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<link rel="stylesheet" type="text/css" href="../static.plasico.bg/plasico170.css" />
+	<link rel="stylesheet" type="text/css" href="../static.plasico.bg/css/local-leasing-modal.css" />
+	<style>
+		.slim-cart { background:#fff; margin:20px 0 40px; padding:20px; box-sizing:border-box; }
+		.slim-cart h1 { margin:0 0 20px; font-size:28px; }
+		#cart-table { width:100%; border-collapse:collapse; }
+		#cart-table th { text-align:left; color:#999; font-weight:normal; font-size:12px; padding:8px 5px; border-bottom:1px solid #e6e6e6; }
+		#cart-table td { padding:14px 5px; border-bottom:1px solid #e6e6e6; vertical-align:middle; }
+		#cart-table .thumb { width:70px; }
+		#cart-table .thumb img { width:64px; height:auto; display:block; }
+		#cart-table .title a { color:#000; font-size:16px; text-decoration:none; }
+		#cart-table .title a:hover { color:#288000; }
+		#cart-table .cat { display:block; font-size:12px; margin-top:5px; color:#666; }
+		#cart-table input.qty { width:56px; height:32px; text-align:center; }
+		#cart-table .price, #cart-table .line-total { font-family:'exo2b',sans-serif; white-space:nowrap; }
+		#cart-table .del { background:transparent; border:0; color:#999; cursor:pointer; font-size:18px; }
+		#cart-table .del:hover { color:#c00; }
+		.slim-cart-summary { margin-top:24px; display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+		.slim-cart-actions { display:flex; flex-direction:column; gap:12px; min-width:280px; }
+		.slim-cart-total { font-size:22px; }
+		.slim-cart-total strong { color:#ff6100; }
+		.slim-lease-teaser { color:#00955D; font-size:16px; font-weight:700; cursor:pointer; }
+		.slim-lease-teaser:hover { text-decoration:underline; }
+		.btn-checkout { display:inline-block; background:#39B54A; color:#fff !important; border:0; padding:12px 22px; font-size:16px; cursor:pointer; text-align:center; text-decoration:none; }
+		.btn-checkout:hover { background:#2f9a3e; }
+		.btn-continue { color:#288000; }
+		.empty-cart { padding:40px 0; text-align:center; color:#666; }
+	</style>
+	<script>
+		window.eur_price_render = 0;
+		window.eur_price_factoring = 0.51129188119622;
+		window.eur_price_sign = 'лв.';
+	</script>
+	<script src="../static.plasico.bg/js/local-consent-fix.js"></script>
+	<script type="text/javascript" defer src="../static.plasico.bg/plasico165.js"></script>
+	<script type="text/javascript" defer src="../static.plasico.bg/js/efd0ab8cb2638f24bfd6f09fa1961145.js"></script>
+	<script src="../static.plasico.bg/js/local-cart.js"></script>
+</head>
+<body id="checkout">
+	<header class="cl rel">
+		<div class="pw">
+			<div id="top-line" class="cl">
+				<nav class="fl">
+					<ul class="cl">
+						<li><a href="index.html"><img src="../static.plasico.bg/images/transp.png" width="16" height="13" class="spr rel home-icon" alt="Начало" /></a></li>
+						<li><a href="index.html">Начало</a></li>
+						<li><a href="poruchka.html">Количка</a></li>
+					</ul>
+				</nav>
+			</div>
+			<div id="head" class="cl">
+				<a id="logo" href="index.html" class="fl">
+					<img width="174" height="64" src="../static.plasico.bg/images/plasico_logo.png" alt="Plasico.bg" />
+				</a>
+				<a href="tel:0700 20 810" id="top-phone" class="fl">
+					<img src="../static.plasico.bg/images/transp.png" width="33" height="26" class="spr phone-icon fl" alt="Телефон" />
+					0700 20 810
+				</a>
+				<span id="cart" data-url="poruchka.html" class="fr pnt rel">
+					<img src="../static.plasico.bg/images/transp.png" width="34" height="24" class="abs spr cart-icon" alt="Количка" />
+					<span class="abs dot" id="cart-dot">0</span>
+					<span class="abs shadow-hider"></span>
+				</span>
+			</div>
+		</div>
+	</header>
+
+	<div id="path" class="cl pw">
+		<a href="index.html">Plasico</a>
+		&nbsp;&rsaquo;&nbsp;
+		<span>Количка</span>
+	</div>
+
+	<main class="cl">
+		<article class="pw">
+			<section class="slim-cart">
+				<h1>Количка</h1>
+				<table id="cart-table">
+					<thead>
+						<tr>
+							<th></th>
+							<th>Продукт</th>
+							<th>Цена</th>
+							<th>Брой</th>
+							<th>Общо</th>
+							<th></th>
+						</tr>
+					</thead>
+					<tbody id="cart-body"></tbody>
+				</table>
+				<div id="cart-empty" class="empty-cart hide">Количката е празна. <a href="index.html">Към продуктите</a></div>
+				<div class="slim-cart-summary" id="cart-summary">
+					<div>
+						<a class="btn-continue" href="index.html">← Продължи пазаруването</a>
+					</div>
+					<div class="slim-cart-actions">
+						<div class="slim-cart-total">Общо: <strong id="cart-total">0,00 €</strong></div>
+						<a href="#" class="slim-lease-teaser js-open-leasing" id="cart-lease-teaser">За 12 месеца x 0,00 €</a>
+						<button type="button" class="btn-checkout js-open-leasing">Купи на изплащане</button>
+					</div>
+				</div>
+			</section>
+		</article>
+	</main>
+
+	<footer>
+		<div id="copyright">
+			<div class="pw cl">
+				<span class="fl">&copy; 2026 <a href="index.html" class="plgr">Plasico.bg</a> slim copy — локална демо количка.</span>
+			</div>
+		</div>
+	</footer>
+
+	<script src="../static.plasico.bg/js/local-leasing-modal.js"></script>
+	<script>
+	(function () {
+		var Cart = window.PlasicoCart;
+		if (!Cart) return;
+
+		var MULTIPLIER_12 = 1.337;
+
+		function esc(s) {
+			return String(s == null ? '' : s)
+				.replace(/&/g, '&amp;')
+				.replace(/</g, '&lt;')
+				.replace(/>/g, '&gt;')
+				.replace(/"/g, '&quot;');
+		}
+
+		function total(items) {
+			return items.reduce(function (sum, p) {
+				return sum + (Number(p.price) || 0) * (parseInt(p.qty, 10) || 0);
+			}, 0);
+		}
+
+		function render() {
+			var items = Cart.getItems();
+			var body = document.getElementById('cart-body');
+			var empty = document.getElementById('cart-empty');
+			var summary = document.getElementById('cart-summary');
+			var table = document.getElementById('cart-table');
+
+			Cart.updateBadge();
+
+			if (!items.length) {
+				body.innerHTML = '';
+				empty.classList.remove('hide');
+				summary.classList.add('hide');
+				if (table) table.classList.add('hide');
+				return;
+			}
+
+			empty.classList.add('hide');
+			summary.classList.remove('hide');
+			if (table) table.classList.remove('hide');
+
+			body.innerHTML = items.map(function (p) {
+				var href = esc(p.href || '#');
+				var img = esc(p.img || '../static.plasico.bg/images/transp.png');
+				var line = (Number(p.price) || 0) * (parseInt(p.qty, 10) || 0);
+				return (
+					'<tr data-id="' + esc(p.id) + '">' +
+					'<td class="thumb"><a href="' + href + '"><img src="' + img + '" alt=""></a></td>' +
+					'<td class="title"><a href="' + href + '">' + esc(p.title) + '</a>' +
+					(p.cat ? '<span class="cat">' + esc(p.cat) + '</span>' : '') + '</td>' +
+					'<td class="price">' + Cart.money(p.price) + '</td>' +
+					'<td><input class="qty" type="number" min="1" value="' + esc(p.qty) + '" data-id="' + esc(p.id) + '"></td>' +
+					'<td class="line-total">' + Cart.money(line) + '</td>' +
+					'<td><button type="button" class="del" data-id="' + esc(p.id) + '" aria-label="Премахни">×</button></td>' +
+					'</tr>'
+				);
+			}).join('');
+
+			var t = total(items);
+			document.getElementById('cart-total').textContent = Cart.money(t);
+			document.getElementById('cart-lease-teaser').textContent =
+				'За 12 месеца x ' + Cart.money((t * MULTIPLIER_12) / 12);
+
+			var priceHost = document.getElementById('slim-cart-price-host');
+			if (!priceHost) {
+				priceHost = document.createElement('div');
+				priceHost.id = 'slim-cart-price-host';
+				priceHost.className = 'prod-price';
+				priceHost.style.display = 'none';
+				priceHost.innerHTML = '<span class="price"></span>';
+				document.body.appendChild(priceHost);
+			}
+			var parts = t.toFixed(2).split('.');
+			priceHost.querySelector('.price').innerHTML =
+				parts[0] + '.<sup class="sup">' + parts[1] + '</sup> <span class="curr">€</span>';
+
+			Array.prototype.forEach.call(body.querySelectorAll('input.qty'), function (input) {
+				input.addEventListener('change', function () {
+					Cart.setQty(input.getAttribute('data-id'), input.value);
+					render();
+				});
+			});
+			Array.prototype.forEach.call(body.querySelectorAll('button.del'), function (btn) {
+				btn.addEventListener('click', function () {
+					Cart.removeItem(btn.getAttribute('data-id'));
+					render();
+				});
+			});
+		}
+
+		document.addEventListener('DOMContentLoaded', render);
+		window.addEventListener('plasico-cart-changed', render);
+		window.addEventListener('load', function () {
+			render();
+		});
+	})();
+	</script>
+</body>
+</html>
