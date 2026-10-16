@@ -26,6 +26,7 @@ Then open http://127.0.0.1:3000/plasico.bg/index.html
 - Cookie consent local fix
 - Installment modal (`local-leasing-modal.js`)
 - Intelekta OS live chat (`local-intelekta-chat.js` loads the iframe widget via `/api/v1/public/chat`, proxied to os.4chairs.bg; floating launcher is inside the iframe)
+- Patched `frame.js` (`static.plasico.bg/js/intelekta-chat-frame.js`) fixes upstream mobile fullscreen shadowing; served at `/api/v1/public/chat/frame.js`
 
 ## Size
 Much smaller than the full HTTrack copy (~700MB). This slim folder is ~30MB.

@@ -2,11 +2,28 @@
   "version": 2,
   "rewrites": [
     {
+      "source": "/api/v1/public/chat/frame.js",
+      "destination": "/static.plasico.bg/js/intelekta-chat-frame.js"
+    },
+    {
       "source": "/api/v1/public/chat/(.*)",
       "destination": "https://os.4chairs.bg/api/v1/public/chat/$1"
     }
   ],
   "headers": [
+    {
+      "source": "/api/v1/public/chat/frame.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" },
+        { "key": "Content-Type", "value": "application/javascript; charset=utf-8" }
+      ]
+    },
+    {
+      "source": "/static.plasico.bg/js/intelekta-chat-frame.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [

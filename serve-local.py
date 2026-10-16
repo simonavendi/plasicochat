@@ -15,6 +15,9 @@ HOST = "127.0.0.1"
 PORT = 3000
 CHAT_PREFIX = "/api/v1/public/chat"
 UPSTREAM = "https://os.4chairs.bg" + CHAT_PREFIX
+# Patched frame.js: upstream shadows layout `mode` and breaks mobile fullscreen.
+FRAME_JS_PATH = CHAT_PREFIX + "/frame.js"
+FRAME_JS_FILE = ROOT / "static.plasico.bg" / "js" / "intelekta-chat-frame.js"
 
 # Upstream may need TLS context on some Windows setups
 _SSL = ssl.create_default_context()
@@ -24,8 +27,11 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 	def __init__(self, *args, **kwargs):
 		super().__init__(*args, directory=str(ROOT), **kwargs)
 
+	def _chat_path(self):
+		return self.path.split("?", 1)[0]
+
 	def do_OPTIONS(self):
-		if self.path.startswith(CHAT_PREFIX):
+		if self._chat_path().startswith(CHAT_PREFIX):
 			self.send_response(204)
 			self._cors()
 			self.end_headers()
@@ -33,13 +39,19 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 		self.send_error(404)
 
 	def do_GET(self):
-		if self.path.startswith(CHAT_PREFIX):
+		if self._chat_path() == FRAME_JS_PATH:
+			self._serve_frame_js()
+			return
+		if self._chat_path().startswith(CHAT_PREFIX):
 			self._proxy()
 			return
 		super().do_GET()
 
 	def do_HEAD(self):
-		if self.path.startswith(CHAT_PREFIX):
+		if self._chat_path() == FRAME_JS_PATH:
+			self._serve_frame_js(head_only=True)
+			return
+		if self._chat_path().startswith(CHAT_PREFIX):
 			self._proxy()
 			return
 		super().do_HEAD()
@@ -72,8 +84,33 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 				"GET, POST, PUT, OPTIONS",
 			)
 
+	def _serve_frame_js(self, head_only=False):
+		try:
+			data = FRAME_JS_FILE.read_bytes()
+		except OSError as e:
+			msg = str(e).encode("utf-8", "replace")
+			self.send_response(500)
+			self.send_header("Content-Type", "text/plain; charset=utf-8")
+			self.send_header("Content-Length", str(len(msg)))
+			self._cors()
+			self.end_headers()
+			if not head_only:
+				self.wfile.write(msg)
+			return
+		self.send_response(200)
+		self.send_header("Content-Type", "application/javascript; charset=utf-8")
+		self.send_header("Content-Length", str(len(data)))
+		self.send_header("Cache-Control", "no-store")
+		self._cors()
+		self.end_headers()
+		if not head_only:
+			self.wfile.write(data)
+
 	def _proxy(self):
-		suffix = self.path[len(CHAT_PREFIX) :] or "/"
+		suffix = self._chat_path()[len(CHAT_PREFIX) :] or "/"
+		# Preserve query string for upstream (tokens, etc.)
+		if "?" in self.path:
+			suffix += "?" + self.path.split("?", 1)[1]
 		url = UPSTREAM + suffix
 		length = int(self.headers.get("Content-Length") or 0)
 		body = self.rfile.read(length) if length else None
