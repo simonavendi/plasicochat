@@ -38,6 +38,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
 			return
 		super().do_GET()
 
+	def do_HEAD(self):
+		if self.path.startswith(CHAT_PREFIX):
+			self._proxy()
+			return
+		super().do_HEAD()
+
 	def do_POST(self):
 		if self.path.startswith(CHAT_PREFIX):
 			self._proxy()
